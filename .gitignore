@@ -1,0 +1,44 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# CMake build directory
+CMakeFiles/
+CMakeCache.txt
+CMakeScripts/
+Testing/
+
+# Visual Studio Code specific files
+.vscode/
+
+# Eclipse specific files
+.project
+.cproject
+.settings/
+
+# Xcode specific files
+*.xcworkspace/
+*.xcodeproj/
+
+# Sublime Text specific files
+*.sublime-*
+
+# Build files
+build/
+bin/
