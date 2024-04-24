@@ -9,6 +9,7 @@ void Grades(int m1,int m2,int m3);
 
 int main()
 {
+    Grades(10,11,12);
     return 0;
 }
 

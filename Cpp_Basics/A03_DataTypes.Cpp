@@ -74,6 +74,7 @@ int main()
     cout << "weight: " << weight << endl;
     cout << "section: " << section << endl;
     cout << "section1: " << section1 << endl;
+    cout << "section2: " << section2 << endl;
     cout << "bool: " << b << endl;
     cout << "bool: " << bb << endl;
     cout << "String: " << name << endl;
