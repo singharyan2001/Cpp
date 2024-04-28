@@ -17,7 +17,7 @@ int main()
 
 void DayName(int day)
 {
-    //Display day anem using switch
+    //Display day using switch
     switch(day){
         case 1:
             cout<<"sun";
