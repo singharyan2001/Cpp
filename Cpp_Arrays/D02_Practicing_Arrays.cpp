@@ -93,7 +93,7 @@ void binary_search_array(int key){
             break;
         }
     }
-
+    cout << "key not found!" << endl; 
 }
 
 
