@@ -6127,6 +6127,60 @@ Working...
 Finished...
 ```
 
+## Mutex in Multi-Threading
+
+### Notes
+- A mutex (Mutual Exclusion) acts like a physical key to a single-occupancy room. If Thread A takes the key, Thread B must wait outside until Thread A finishes and returns it. This guarantees that only one thread can modify a shared resource at a time, preventing data corruption and race conditions.
+- How It Works in Multi-threading - When a thread calls a lock:
+    - **Available:** If the mutex is free, the thread takes ownership and continues executing.
+    - **Locked (Blocked):** If another thread already holds the mutex, the OS puts the requesting thread to sleep. It uses zero CPU cycles while waiting.
+    - **Release:** When the holding thread unlocks the mutex, the OS scheduler wakes up exactly one sleeping thread and hands it the lock.
+- **The Golden Rule:** Never call `.lock()` and `.unlock()` manually in C++. If a function throws an exception or returns early before hitting `.unlock()`, the mutex remains permanently locked, freezing your entire application. Always use RAII wrappers.
+- Types of C++ Mutexes - Different scenarios require different lock behaviors:
+    - **`std::mutex`:** The standard, high-performance default. If a thread holding this mutex tries to lock it *again*, the program will deadlock.
+    - **`std::recursive_mutex`:** A thread can lock this multiple times without getting stuck. It maintains a "lock count" and only fully releases the resource when unlocked the same number of times. (Often used in recursive functions).
+    - **`std::timed_mutex`:** Exposes a `.try_lock_for()` method. If the thread cannot acquire the lock within a specified time limit, it gives up rather than waiting forever.
+    - **`std::shared_mutex` (C++17):** A "Read/Write" lock. Multiple threads can lock it for *reading* simultaneously without blocking each other. However, if a thread needs to *write*, it demands exclusive access and blocks everyone else.
+- The RAII Wrappers (Lock Managers)
+    - Because manual locking is dangerous, C++ uses RAII (Resource Acquisition Is Initialization) wrappers. You create a wrapper object on the stack, and it automatically unlocks the mutex when it is destroyed at the end of the scope.
+    - **`std::lock_guard`:** The lightweight, zero-overhead default. It locks the mutex immediately upon creation and unlocks it when it goes out of scope. It cannot be unlocked manually.
+    - **`std::unique_lock`:** The flexible wrapper. It allows deferred locking, manual unlocking/relocking, and is required if you are using a `std::condition_variable` .
+    - **`std::scoped_lock` (C++17):** The deadlock-proof upgrade to `lock_guard`. If you ever need to lock *two or more* mutexes at the exact same time, passing them to a `scoped_lock` guarantees they are acquired in a safe order, preventing cross-thread deadlocks.
+
+### Hands-on Trials
+Refer to Cpp040_mutex/ for hands-on implementation trial.
+
+### Key Understanding Notes
+1. **The "Sleep Rule" applies equally to all of RAII Wrappers:** If a thread goes to sleep while holding a lock, the mutex remains locked. The OS will not forcefully unlock it. Any other thread that tries to grab that mutex will be forced to sleep too, causing a traffic jam in your application. This is why a core rule of system design is: Never sleep, do heavy math, or wait for hardware I/O while holding a lock unless absolutely necessary.
+2. **std::lock_guard (The Strict Scope):**
+    1. How it works: You immediately acquire it, you cannot release it manually, and once you go out of scope, RAII destroys it and the mutex is released.
+    2. When you sleep with it: The mutex stays locked for the entire duration of the sleep. You have no way to unlock it before sleeping because lock_guard lacks an .unlock() method.
+    3. System Design Use-Case: Use this for lightning-fast critical sections—like updating a variable, pushing a pointer to a queue, or toggling a boolean flag.
+3. **std::unique_lock (The Manual Override):**
+   1. How it works: You immediately acquire it (though you can tell it to wait), you have the option to manually release it (.unlock()) and re-acquire it (.lock()), and RAII still guarantees it unlocks when destroyed if you forgot to do it manually.
+   2. When you sleep with it: If you just call sleep(), the lock stays held. But, because you have manual control, your design should be: lock.unlock(); --> sleep(); --> lock.lock();. This allows other threads to use the resource while you are resting.
+   3. System Design Use-Case:
+      1. When you need to hold a lock, drop it to do something slow (like a printf or a math calculation), and pick it back up.
+      2. It is strictly required for `std::condition_variable`. A condition variable puts a thread to sleep and needs to unlock the mutex automatically while it sleeps, which only unique_lock allows it to do.
+4. **std::scoped_lock (The Deadlock Preventer):**
+   1. How it works: It acts exactly like lock_guard (strict scope, no manual unlocking), but it can take two or more mutexes at the exact same time.
+   2. When you sleep with it: It holds all the mutexes hostage while you sleep.
+   3. What else do we get? (The Feature): You get a mathematically guaranteed deadlock avoidance algorithm.
+      1. The Problem: If Thread A locks Mutex 1 then Mutex 2, and Thread B locks Mutex 2 then Mutex 1, they will deadlock waiting on each other.
+      2. The Solution: When you pass multiple mutexes to std::scoped_lock, it ignores the order you typed them in. Under the hood, it sorts the mutexes by their memory addresses and locks them in that strict global order. This makes it impossible for two threads to cross-wire their locks, completely eliminating that class of deadlock.
+   4. System Design Use-Case: Use this whenever a single action requires exclusive access to two independent resources (e.g., copying data from the RS485 buffer directly into the I2C buffer).
+
+## Condition Variable in Multi-Threading
+
+### Notes
+
+
+### Hands-On Trials
+Refer to Cpp041_cond_var/ for hands-on implementation trial.
+
+### Key Understanding Notes
+
+
 ## Timing in C++
 
 

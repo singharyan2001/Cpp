@@ -44,6 +44,8 @@ add_subdirectory(Cpp036_lambdas)
 add_subdirectory(Cpp037_threads)
 add_subdirectory(Cpp038_timing)
 add_subdirectory(Cpp039_maps)
+add_subdirectory(Cpp040_mutex)
+add_subdirectory(Cpp041_cond_var)
 
 add_subdirectory(Mini-Projects/MP001_ring_buffer)
 add_subdirectory(Mini-Projects/MP002_datalogger)
